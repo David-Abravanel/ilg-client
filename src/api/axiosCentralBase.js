@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Base axios object
 const axiosCentral = axios.create({
-  baseURL: "http://localhost:8080",
+  baseURL: "http://44.220.134.92:8080",
   headers: {
     "Content-Type": "application/json",
   },

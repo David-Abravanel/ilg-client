@@ -3,7 +3,7 @@ import Table from "./components/table";
 
 const router = createBrowserRouter([
   {
-    path: "/posts",
+    path: "/",
     element: <Table />,
     errorElement: <div>404 Not Found</div>,
   },
