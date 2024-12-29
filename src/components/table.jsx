@@ -10,7 +10,6 @@ import { Popup } from "./Popup";
 
 const Table = () => {
   const [data, setData] = useState([]);
-  const [baseData, setBaseData] = useState([]);
   const [sortField, setSortField] = useState("id");
   const [sortOrder, setSortOrder] = useState("onOrder");
   const [searchValue, setSearchValue] = useState("");
@@ -24,7 +23,7 @@ const Table = () => {
       try {
         const posts = await getPosts();
         if (posts && Array.isArray(posts)) {
-          setBaseData(posts);
+          setData(posts);
         } else {
           console.error("Error: Invalid data format");
         }
@@ -37,28 +36,29 @@ const Table = () => {
     getAllPosts();
   }, []);
 
-  useEffect(() => {
-    const filteredData = baseData.filter((bd) => {
-      if (typeof bd[sortField] === "string") {
-        return bd[sortField].toLowerCase().includes(searchValue.toLowerCase());
+  const getProcessedData = () => {
+    let processedData = data.filter((item) => {
+      if (typeof item[sortField] === "string") {
+        return item[sortField]
+          .toLowerCase()
+          .includes(searchValue.toLowerCase());
       }
       return false;
     });
-    setData(filteredData);
-  }, [searchValue, sortField, baseData]);
 
-  const sortedData = [...data].sort((a, b) => {
-    if (sortField === "id" || sortField === "userId") {
-      return sortOrder === "onOrder"
-        ? a[sortField] - b[sortField]
-        : b[sortField] - a[sortField];
-    } else if (sortField === "title" || sortField === "body") {
-      return sortOrder === "onOrder"
-        ? a[sortField].localeCompare(b[sortField])
-        : b[sortField].localeCompare(a[sortField]);
-    }
-    return 0;
-  });
+    return processedData.sort((a, b) => {
+      if (sortField === "id" || sortField === "userId") {
+        return sortOrder === "onOrder"
+          ? a[sortField] - b[sortField]
+          : b[sortField] - a[sortField];
+      } else if (sortField === "title" || sortField === "body") {
+        return sortOrder === "onOrder"
+          ? a[sortField].localeCompare(b[sortField])
+          : b[sortField].localeCompare(a[sortField]);
+      }
+      return 0;
+    });
+  };
 
   const addComment = async (id, comment) => {
     setIsLoading(true);
@@ -87,7 +87,7 @@ const Table = () => {
     try {
       const res = await deleteAllPosts();
       if (res.status === "success") {
-        setBaseData([]);
+        setData([]);
       }
     } catch (error) {
       console.error("Error deleting data from DB: ", error);
@@ -101,7 +101,7 @@ const Table = () => {
     try {
       const posts = await fetchPosts();
       if (posts && Array.isArray(posts)) {
-        setBaseData(posts);
+        setData(posts);
       }
     } catch (error) {
       console.error("Error fetching data and save on DB: ", error);
@@ -114,11 +114,13 @@ const Table = () => {
     setSortOrder(sortOrder === "onOrder" ? "reverseOrder" : "onOrder");
   };
 
+  const processedData = getProcessedData();
+
   return (
     <div>
       <h1>Posts Table</h1>
       <h3>
-        Total posts: ({baseData.length}) |:::| View posts: ({data.length})
+        Total posts: ({data.length}) |:::| View posts: ({processedData.length})
       </h3>
 
       <div className="sort-controls">
@@ -160,7 +162,7 @@ const Table = () => {
               </tr>
             </thead>
             <tbody>
-              {sortedData.map((d) => (
+              {processedData.map((d) => (
                 <tr key={d.id}>
                   <td>{d.id}</td>
                   <td>{d.title}</td>
